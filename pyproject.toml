@@ -5,6 +5,9 @@ description = "Collection of helper scripts for postgresql"
 authors = ["David Nugent <davidn@uniquode.io>"]
 license = "MIT"
 readme = "README.md"
+classifiers = [
+    "Programming Language::Python::3",
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -12,7 +15,7 @@ envex = "^1.5.0"
 psycopg2-binary = "^2.9.5"
 
 [tool.poetry.scripts]
-devtest = { callable = "scripts:dbcreate.py" }
+dbcreate = "scripts.dbcreate"
 
 [build-system]
 requires = ["poetry-core"]
