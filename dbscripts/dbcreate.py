@@ -110,7 +110,7 @@ def test_db(db, silent=False, **kwargs):
     return False
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description=__doc__, epilog=textwrap.dedent("""
@@ -147,3 +147,7 @@ if __name__ == '__main__':
             setup_db(dbi)
         else:
             parser.print_help()
+
+
+if __name__ == '__main__':
+    main()

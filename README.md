@@ -7,5 +7,5 @@ Designed for use with postgresql.
 ## dbcreate
 run the following for usage
 ```shell
-$ scripts/dbcreate.py -h
+$ dbscripts/dbcreate.py -h
 ```
