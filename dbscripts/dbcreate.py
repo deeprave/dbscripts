@@ -42,7 +42,7 @@ def db_info(host=None, port=None, name=None, role=None,  user=None, pswd=None, u
                 db[k] = v
             db["host"] = db["ipv4host"] or db["ipv6host"]
 
-    db["url"] = f"{db['scheme']}://{db['user']}@{db['pass']}:info['host']:{db['port'] or 5432}/{db['name']}"
+    db["url"] = f"{db['scheme']}://{db['user']}:{db['pass']}@{db['host']}:{db['port'] or 5432}/{db['name']}"
     return db
 
 
@@ -81,8 +81,8 @@ def drop_db(db, **kwargs):
 def setup_db(db, **kwargs):
     conn = db_connect(db, sa=True, **kwargs)
     with conn.cursor() as cursor:
-        cursor.execute(f"""CREATE ROLE {db["role"]}""")
-        cursor.execute(f"""CREATE USER {db["user"]} CREATEDB INHERIT PASSWORD '{db["pass"]}'""")
+        cursor.execute(f"""CREATE ROLE IF NOT EXOSTS {db["role"]}""")
+        cursor.execute(f"""CREATE USER IF NOT EXISTS {db["user"]} CREATEDB INHERIT PASSWORD '{db["pass"]}'""")
         cursor.execute(f"""GRANT {db["role"]} to {db["user"]}""")
         cursor.execute(f"""ALTER ROLE {db["role"]} SET client_encoding to 'utf8'""")
         cursor.execute(f"""ALTER ROLE {db["role"]} SET default_transaction_isolation to 'read committed'""")
@@ -97,15 +97,18 @@ def setup_db(db, **kwargs):
 
 
 def test_db(db, silent=False, **kwargs):
+    test_exc = None
     try:
         conn = db_connect(db, sa=False, **kwargs)
         conn.close()
         if not silent:
             print(f"""Database '{db["name"]}' exists""")
         return True
-    except pg.DatabaseError:
-        pass
+    except pg.DatabaseError as exc:
+        test_exc = exc
     if not silent:
+        if test_exc:
+            print(f"""Database '{db["name"]}': {test_exc}""")
         print(f"""Database '{db["name"]}' does not yet exist""")
     return False
 
