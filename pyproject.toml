@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dbscripts"
-version = "1.2.0"
+version = "1.2.1"
 description = "Collection of helper scripts for postgresql"
 authors = ["David Nugent <davidn@uniquode.io>"]
 license = "MIT"

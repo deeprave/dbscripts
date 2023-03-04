@@ -104,8 +104,8 @@ def pg_database_exists(db, silent=False, **kwargs):
 def pg_setup(db, **kwargs):
     conn = pg_connect(db, sa=True, **kwargs)
     with conn.cursor() as cursor:
-        cursor.execute(f"""CREATE ROLE IF NOT EXISTS {db["role"]}""")
-        cursor.execute(f"""CREATE USER IF NOT EXISTS {db["user"]} CREATEDB INHERIT PASSWORD '{db["pass"]}'""")
+        cursor.execute(f"""CREATE ROLE {db["role"]}""")
+        cursor.execute(f"""CREATE USER {db["user"]} CREATEDB INHERIT PASSWORD '{db["pass"]}'""")
         cursor.execute(f"""GRANT {db["role"]} to {db["user"]}""")
         cursor.execute(f"""ALTER ROLE {db["role"]} SET client_encoding to 'utf8'""")
         cursor.execute(f"""ALTER ROLE {db["role"]} SET default_transaction_isolation to 'read committed'""")
