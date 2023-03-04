@@ -31,6 +31,8 @@ def pg_db_info(host=None, port=None, name=None, role=None, user=None, pswd=None,
         "role": user or env("DBROLE", default=env("DBUSER")),
         "pass": pswd or env("DBPASS"),
     }
+    if db["host"] is not None and ':' in db["host"]:
+        db["host"], db["port"] = db["host"].split(':', maxsplit=1)
     if not url and env.is_set("DATABASE_URL"):
         url = env("DATABASE_URL")
     if url:  # parse it
@@ -46,7 +48,7 @@ def pg_db_info(host=None, port=None, name=None, role=None, user=None, pswd=None,
                 db[k] = v
             db["host"] = db["ipv4host"] or db["ipv6host"]
 
-    db["url"] = f"{db['scheme']}://{db['user']}@{db['pass']}:info['host']:{db['port'] or 5432}/{db['name']}"
+    db["url"] = f"{db['scheme']}://{db['user']}:{db['pass']}@{db['host']}:{db['port'] or 5432}/{db['name']}"
     return db
 
 
