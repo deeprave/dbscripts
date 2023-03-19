@@ -9,3 +9,9 @@ run the following for usage
 ```shell
 $ dbscripts/dbcreate.py -h
 ```
+
+## dbready
+run the following for usage
+```shell
+$ dbscripts/dbready.py -h
+```

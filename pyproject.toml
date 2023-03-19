@@ -1,23 +1,33 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling>=1.11.0"]
+build-backend = "hatchling.build"
+
+[project]
 name = "dbscripts"
-version = "1.2.1"
+version = "1.3.0"
 description = "Collection of helper scripts for postgresql"
-authors = ["David Nugent <davidn@uniquode.io>"]
-license = "MIT"
+license = {text = "MIT"}
 readme = "README.md"
+authors = [
+    {name = "David Nugent", email = "davidn@uniquode.io"}
+]
 classifiers = [
     "Topic :: Database :: Front-Ends",
     "Programming Language :: Python :: 3",
 ]
+requires-python = ">=3.9"
+dependencies = [
+    "envex >=1.5.0",
+    "psycopg[binary] >=3.1.8",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-envex = ">=1.5.0"
-psycopg = {extras = ["binary"], version = "^3.1.8"}
+[project.optional-dependencies]
+dev = [
+    "pip-tools>=6.0",
+    "hatch>=1.0",
+]
 
-[tool.poetry.scripts]
+
+[project.scripts]
 dbcreate = "dbscripts.dbcreate:main"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+dbready = "dbscripts.dbready:main"
