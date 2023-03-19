@@ -5,3 +5,13 @@
 .pytest_cache/
 __pycache__/
 *.py[cod]
+
+# distribution
+dist/
+sdist/
+wheels/
+*.egg
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
