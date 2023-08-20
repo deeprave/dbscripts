@@ -1,17 +1,18 @@
 import copy
-import re
 import logging
+import re
+
 import psycopg as pg
 from envex import Env
 
 __all__ = (
-    'pg_db_info',
-    'pg_connect',
-    'pg_database_exists',
-    'pg_drop_database',
-    'pg_setup',
-    'pg_dsn',
-    'pg_clear_connections',
+    "pg_db_info",
+    "pg_connect",
+    "pg_database_exists",
+    "pg_drop_database",
+    "pg_setup",
+    "pg_dsn",
+    "pg_clear_connections",
 )
 
 
@@ -23,7 +24,6 @@ env = Env(readenv=True, parents=True)
 
 
 class DBUrl:
-
     def __init__(self, *args, host=None, port=None, name=None, role=None, user=None, pswd=None, url=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.scheme = "postgresql"
@@ -33,19 +33,21 @@ class DBUrl:
         self.user = env("DBUSER")
         self.role = env("DBROLE", default=env("DBUSER"))
         self.pswd = env("DBPASS")
-        self.ipv4host = self.ipv6host = ''
+        self.ipv4host = self.ipv6host = ""
 
-        if self.host and ':' in self.host:
-            self.host, self.port = self.host.split(':', maxsplit=1)
+        if self.host and ":" in self.host:
+            self.host, self.port = self.host.split(":", maxsplit=1)
         if not url and env.is_set("DATABASE_URL"):
             url = env("DATABASE_URL")
         if url:  # parse it
-            p = re.compile(r"""
+            p = re.compile(
+                r"""
                            (?P<scheme>[\w+]+)://
                            (?:(?P<user>[^:/]*)(?::(?P<pswd>[^@]*))?@)?
                            (?:(?:\[(?P<ipv6host>[^/?]+)]|(?P<ipv4host>[^/:?]+))?(?::(?P<port>[^/?]*))?)?
                            (?:/(?P<name>[^?]*))?(?:\?(?P<query>.*))?""",
-                           re.X, )
+                re.X,
+            )
 
             if (m := p.match(url)) is not None:
                 for k, v in m.groupdict().items():
@@ -55,8 +57,8 @@ class DBUrl:
         # allow overrides
 
         if host:
-            if ':' in host:
-                self.host, self.port = self.host.split(':', maxsplit=1)
+            if ":" in host:
+                self.host, self.port = self.host.split(":", maxsplit=1)
             else:
                 self.host = host
         if port:
@@ -71,8 +73,15 @@ class DBUrl:
             self.pswd = pswd
 
     def to_dict(self):
-        return dict(scheme=self.scheme, host=self.host, port=self.port,
-                    name=self.name, user=self.user, role=self.role, pswd=self.pswd)
+        return dict(
+            scheme=self.scheme,
+            host=self.host,
+            port=self.port,
+            name=self.name,
+            user=self.user,
+            role=self.role,
+            pswd=self.pswd,
+        )
 
     def url(self):
         return f"{self.scheme}://{self.user}:{self.pswd}@{self.host}:{self.port or 5432}/{self.name}"
@@ -91,9 +100,9 @@ def pg_db_info(host=None, port=None, name=None, role=None, user=None, pswd=None,
 
 
 def pg_dsn(db: DBUrl, sa: bool = False) -> str:
-    dsn = env('SA_DATABASE_URL') if sa else db.url()
+    dsn = env("SA_DATABASE_URL") if sa else db.url()
     if not dsn:
-        raise EnvironmentNotConfigured('SA_DATABASE_URL' if sa else 'DATABASE_URL')
+        raise EnvironmentNotConfigured("SA_DATABASE_URL" if sa else "DATABASE_URL")
     return dsn
 
 
@@ -107,9 +116,11 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
-            cursor.execute(f"""SELECT pg_terminate_backend(pid) """
-                           f"""FROM postgres.pg_catalog.pg_stat_activity """
-                           f"""WHERE datname='{db.name}'""")
+            cursor.execute(
+                f"""SELECT pg_terminate_backend(pid) """
+                f"""FROM postgres.pg_catalog.pg_stat_activity """
+                f"""WHERE datname='{db.name}'"""
+            )
         conn.close()
 
 
