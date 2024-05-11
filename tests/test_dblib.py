@@ -106,7 +106,10 @@ def test_pg_clear_connections(postgres):
         user=DB_USER,
         password=DB_PASSWORD
     )
-    dblib.pg_clear_connections(db_info)  # No assertion, just checking for unexpected exceptions
+    before = dblib.pg_count_connections(db_info)
+    dblib.pg_clear_connections(db_info)
+    after = dblib.pg_count_connections(db_info)
+    assert after == 0, f"Connections not cleared (initial: {before}, final: {after})"
 
 
 def test_pg_drop_database(postgres):

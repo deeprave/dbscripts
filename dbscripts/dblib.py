@@ -122,6 +122,23 @@ def pg_connect(db: DBUrl, sa: bool = False, **kwargs):
     return conn
 
 
+def pg_count_connections(db: DBUrl, **kwargs) -> int:
+    if db.name:
+        conn = pg_connect(db, sa=True, **kwargs)
+        with conn.cursor() as cursor:
+
+            cursor.execute(
+                f"""SELECT COUNT(*) """
+                f"""FROM pg_catalog.pg_stat_activity """
+                f"""WHERE datname='{db.name}'"""
+            )
+            result = cursor.fetchone()
+        conn.close()
+        if result:
+            return result[0]
+    return 0
+
+
 def pg_clear_connections(db: DBUrl, **kwargs) -> None:
     # Note: this won't work on the sa database, i.e. `postgres`
     if db.name:
