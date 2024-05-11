@@ -50,6 +50,8 @@ def main():
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, pswd=a.pswd, url=a.url)
 
     if a.verbose:
+        dbi = dbi.copy()
+        dbi.password = "********"
         logging.info(f"DATABASE_URL={dbi.url()}")
 
     if a.test:
