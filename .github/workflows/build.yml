@@ -44,22 +44,3 @@ jobs:
 
     - name: Build
       run: poetry build
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: artifacts
-        path: dist/*
-        if-no-files-found: error
-
-#  publish:
-#    name: Publish release
-#    needs:
-#    - pure-python-wheel-and-sdist
-#    runs-on: ubuntu-latest
-#    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-#
-#    steps:
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: artifacts
-#        path: dist
