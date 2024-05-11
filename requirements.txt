@@ -6,7 +6,7 @@
 #
 envex==3.1.1
     # via dbscripts (pyproject.toml)
-psycopg[binary]==3.1.8
+psycopg[binary]==3.1.19
     # via dbscripts (pyproject.toml)
 psycopg-binary==3.1.8
     # via psycopg
