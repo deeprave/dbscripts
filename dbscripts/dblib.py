@@ -128,9 +128,8 @@ def pg_count_connections(db: DBUrl, **kwargs) -> int:
         with conn.cursor() as cursor:
 
             cursor.execute(
-                f"""SELECT COUNT(*) """
-                f"""FROM pg_catalog.pg_stat_activity """
-                f"""WHERE datname='{db.name}'"""
+                """SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """
+                """WHERE datname=%s""", (db.name,)
             )
             result = cursor.fetchone()
         conn.close()
@@ -145,9 +144,8 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
             cursor.execute(
-                f"""SELECT pg_terminate_backend(pid) """
-                f"""FROM pg_catalog.pg_stat_activity """
-                f"""WHERE datname='{db.name}'"""
+                """SELECT pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity """
+                """WHERE datname = %s""", (db.name,)
             )
         conn.close()
 
