@@ -55,7 +55,9 @@ def main():
     db.name = ""
 
     if a.verbose:
-        logging.info(f"DATABASE_URL={dbi.url()}")
+        dbc = dbi.copy()
+        dbc.password = "********"
+        logging.info(f"DATABASE_URL={dbc.url()}")
 
     now = time.time()
     end_at = now
