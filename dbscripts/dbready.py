@@ -49,7 +49,7 @@ def main():
 
     a = parser.parse_args()
 
-    dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, pswd=a.pswd, url=a.url)
+    dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, password=a.pswd, url=a.url)
 
     db = dbi.copy()
     db.name = ""
@@ -73,20 +73,23 @@ def main():
             success = True
         except DatabaseError as exc:
             message = str(exc.args[0]).replace("\n", " ")
-            success = not any(reason in message for reason in ["Connection refused", "connection is bad"])
+            success = all(
+                reason not in message
+                for reason in ["Connection refused", "connection is bad"]
+            )
             if not a.quiet and a.verbose:
                 logging.warning(message)
 
         if success:
             break
 
-        if a.wait:
-            now = time.time()
-            if a.verbose:
-                logging.info(f"Database is not ready ({count})")
-            time.sleep(a.sleep)
-        else:
+        if not a.wait:
             break
+
+        now = time.time()
+        if a.verbose:
+            logging.info(f"Database is not ready ({count})")
+        time.sleep(a.sleep)
 
     if not success:
         if not a.quiet:
