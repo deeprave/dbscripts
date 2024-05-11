@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Create/remove/test for database for django using best practices.
+Create/remove/test database for django using best practices.
 """
 import logging
 import textwrap
@@ -47,7 +47,7 @@ def main():
     parser.add_argument("-p", "--pswd", default=None, help="override database password")
     a = parser.parse_args()
 
-    dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, pswd=a.pswd, url=a.url)
+    dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, password=a.pswd, url=a.url)
 
     if a.verbose:
         dbi = dbi.copy()
@@ -56,15 +56,14 @@ def main():
 
     if a.test:
         pg_database_exists(dbi)
+    elif a.remove:
+        pg_drop_database(dbi)
+    elif pg_database_exists(dbi, silent=not a.verbose):
+        logging.warning(f"Database {dbi.name} already exists")
+    elif a.create:
+        pg_setup(dbi)
     else:
-        if a.remove:
-            pg_drop_database(dbi)
-        elif pg_database_exists(dbi, silent=not a.verbose):
-            logging.warning(f"Database {dbi.name} already exists")
-        elif a.create:
-            pg_setup(dbi)
-        else:
-            parser.print_help()
+        parser.print_help()
 
 
 if __name__ == "__main__":

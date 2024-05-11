@@ -1,6 +1,7 @@
+import contextlib
 import copy
 import logging
-import re
+from urllib.parse import urlparse
 
 import psycopg as pg
 from envex import Env
@@ -16,61 +17,70 @@ __all__ = (
 )
 
 
-class EnvironmentNotConfigured(BaseException):
+class EnvironmentNotConfigured(Exception):
     pass
 
 
-env = Env(readenv=True, parents=True)
+env = Env(readenv=True, exception=EnvironmentNotConfigured)
 
 
 class DBUrl:
-    def __init__(self, *args, host=None, port=None, name=None, role=None, user=None, pswd=None, url=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.scheme = "postgresql"
-        self.host = env("DBHOST")
-        self.port = env("DBPORT")
-        self.name = env("DBNAME")
-        self.user = env("DBUSER")
-        self.role = env("DBROLE", default=env("DBUSER"))
-        self.pswd = env("DBPASS")
-        self.ipv4host = self.ipv6host = ""
 
-        if self.host and ":" in self.host:
+    __default_pgport = 5432
+    __defaults = {
+        "scheme": "postgresql",
+        "host": env("DBHOST"),
+        "port": env("DBPORT"),
+        "name": env("DBNAME"),
+        "user": env("DBUSER"),
+        "role": env("DBROLE", default=env("DBUSER")),
+        "password": env("DBPASS"),
+    }
+
+    def __init__(self, **kwargs):
+        """
+        Initialize a new instance of the DBUrl class from an optional url.
+        Values are sourced from the environment, if available, and can be
+        overridden by passing them as keyword arguments.
+
+        Parameters:
+        host (str, optional): The host of the database.
+        port (str, optional): The port of the database.
+        name (str, optional): The name of the database.
+        role (str, optional): The role for the database.
+        user (str, optional): The user for the database.
+        password (str, optional): The password for the database.
+        url (str, optional): The url of the database.
+        """
+        # set values from defaults
+        for attr, value in self.__defaults.items():
+            setattr(self, attr, value)
+
+        if self.host and ":" in self.host and not self.port:
             self.host, self.port = self.host.split(":", maxsplit=1)
-        if not url and env.is_set("DATABASE_URL"):
-            url = env("DATABASE_URL")
-        if url:  # parse it
-            p = re.compile(
-                r"""
-                           (?P<scheme>[\w+]+)://
-                           (?:(?P<user>[^:/]*)(?::(?P<pswd>[^@]*))?@)?
-                           (?:(?:\[(?P<ipv6host>[^/?]+)]|(?P<ipv4host>[^/:?]+))?(?::(?P<port>[^/?]*))?)?
-                           (?:/(?P<name>[^?]*))?(?:\?(?P<query>.*))?""",
-                re.X,
-            )
 
-            if (m := p.match(url)) is not None:
-                for k, v in m.groupdict().items():
-                    setattr(self, k, v)
-                self.host = self.ipv4host or self.ipv6host
+        self.__parse_url(kwargs.get("url", None))
 
         # allow overrides
+        for attr in self.__defaults.keys():
+            if (value := kwargs.get(attr, None)) is not None:
+                setattr(self, attr, value)
 
-        if host:
-            if ":" in host:
-                self.host, self.port = self.host.split(":", maxsplit=1)
-            else:
-                self.host = host
-        if port:
-            self.port = port
-        if name:
-            self.name = name
-        if user:
-            self.user = user
-            if not role:
-                self.role = user
-        if pswd:
-            self.pswd = pswd
+    def __parse_url(self, url):
+        """
+        Parse the url and set the appropriate values for the instance.
+        :param url: str|None url to parse, otherwise sourced from the environment
+        """
+        if not url:
+            url = env("DATABASE_URL") or env("DJANGO_DATABASE_URL")
+        if url and (parsed_url := urlparse(url)):
+            self.scheme = parsed_url.scheme.replace("postgresql+psycopg2", "postgresql")
+            self.host = parsed_url.hostname
+            self.port = parsed_url.port
+            self.name = parsed_url.path.lstrip("/")
+            self.user = self.role = parsed_url.username
+            self.password = parsed_url.password
+
 
     def to_dict(self):
         return dict(
@@ -80,23 +90,23 @@ class DBUrl:
             name=self.name,
             user=self.user,
             role=self.role,
-            pswd=self.pswd,
+            pswd=self.password,
         )
 
     def url(self):
-        return f"{self.scheme}://{self.user}:{self.pswd}@{self.host}:{self.port or 5432}/{self.name}"
+        return f"{self.scheme}://{self.user}:{self.password}@{self.host}:{self.port or self.__default_pgport}/{self.name}"
 
-    def __getitem__(self, value):
-        if hasattr(self, value):
-            return getattr(self, value)
-        raise KeyError(value)
+    def __getitem__(self, key):
+        if hasattr(self, key):
+            return getattr(self, key)
+        raise KeyError(key)
 
     def copy(self):
         return copy.copy(self)
 
 
-def pg_db_info(host=None, port=None, name=None, role=None, user=None, pswd=None, url=None) -> DBUrl:
-    return DBUrl(host=host, port=port, name=name, role=role, user=user, pswd=pswd, url=url)
+def pg_db_info(host=None, port=None, name=None, role=None, user=None, password=None, url=None) -> DBUrl:
+    return DBUrl(host=host, port=port, name=name, role=role, user=user, password=password, url=url)
 
 
 def pg_dsn(db: DBUrl, sa: bool = False) -> str:
@@ -108,17 +118,18 @@ def pg_dsn(db: DBUrl, sa: bool = False) -> str:
 
 def pg_connect(db: DBUrl, sa: bool = False, **kwargs):
     conn = pg.connect(pg_dsn(db, sa=sa), **kwargs)
-    conn.autocommit = True
+    conn.autocommit = kwargs.get("autocommit", True)
     return conn
 
 
 def pg_clear_connections(db: DBUrl, **kwargs) -> None:
+    # Note: this won't work on the sa database, i.e. `postgres`
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
             cursor.execute(
                 f"""SELECT pg_terminate_backend(pid) """
-                f"""FROM postgres.pg_catalog.pg_stat_activity """
+                f"""FROM pg_catalog.pg_stat_activity """
                 f"""WHERE datname='{db.name}'"""
             )
         conn.close()
@@ -154,10 +165,13 @@ def pg_database_exists(db: DBUrl, silent: bool = False, raise_error: bool = Fals
 
 def pg_setup(db: DBUrl, **kwargs):
     conn = pg_connect(db, sa=True, **kwargs)
+
     with conn.cursor() as cursor:
-        cursor.execute(f"""CREATE USER {db.user} CREATEDB INHERIT PASSWORD '{db.pswd}'""")
+        with contextlib.suppress(pg.errors.DuplicateObject):
+            cursor.execute(f"""CREATE USER {db.user} CREATEDB INHERIT PASSWORD '{db.password}'""")
         if db.role != db.user:
-            cursor.execute(f"""CREATE ROLE {db.role}""")
+            with contextlib.suppress(pg.errors.DuplicateObject):
+                cursor.execute(f"""CREATE ROLE {db.role}""")
             cursor.execute(f"""GRANT {db.role} to {db.user}""")
         cursor.execute(f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""")
         cursor.execute(f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""")
@@ -165,7 +179,8 @@ def pg_setup(db: DBUrl, **kwargs):
     logging.info(f"""Database '{db.name}' created""")
 
     with conn.cursor() as cursor:
-        cursor.execute(f"""CREATE DATABASE {db.name} WITH OWNER {db.role}""")
+        with contextlib.suppress(pg.errors.DuplicateDatabase):
+            cursor.execute(f"""CREATE DATABASE {db.name} WITH OWNER {db.role}""")
         cursor.execute(f"""GRANT ALL PRIVILEGES ON DATABASE {db.name} TO {db.role}""")
 
     conn.close()
