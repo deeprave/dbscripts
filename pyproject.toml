@@ -23,7 +23,7 @@ dbready = "dbscripts.dbready:main"
 pytest = ">= 7.2"
 pre-commit = "^3.3.3"
 ruff = "^0.4.4"
-testcontainers = "^4.4.0"
+testcontainers = "^4.5.1"
 black = "24.4.2"
 
 [tool.ruff]
