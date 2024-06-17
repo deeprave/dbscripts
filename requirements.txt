@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt --resolver=backtracking pyproject.toml
 #
-envex==3.1.1
+envex==3.1.2
     # via dbscripts (pyproject.toml)
 psycopg[binary]==3.1.19
     # via dbscripts (pyproject.toml)
