@@ -22,7 +22,7 @@ dbready = "dbscripts.dbready:main"
 [tool.poetry.group.dev.dependencies]
 pytest = ">= 7.2"
 pre-commit = "^3.3.3"
-ruff = "^0.4.4"
+ruff = "^0.5.2"
 testcontainers = "^4.7.1"
 black = "24.4.2"
 
