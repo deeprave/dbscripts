@@ -33,7 +33,7 @@ def set_env_prefix(prefix: str):
 
 def getenv(key: str, default=None):
     if env_prefix:
-        if value := env(f"{env_prefix}_{key}") is not None:
+        if (value := env(f"{env_prefix}_{key}")) is not None:
             return value
     return env(key, default=default)
 
