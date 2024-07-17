@@ -1,4 +1,11 @@
 # ChangeLog
+### 1.5.2
+- added -e <PREFIX> option, to add a prefix to environment variables 
+- renamed `dbcreate` to `dbutil`, to be more descriptive of function
+
+### 1.5.2 (unpublished)
+- various @dependabot dependency updates
+
 ### 1.5.0
 - updated pre-commit checks
 - added unit tests for `dblib.py`

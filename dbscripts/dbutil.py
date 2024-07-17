@@ -39,6 +39,7 @@ def main():
     )
     parser.add_argument("-u", "--url", default=None, help="Connection url: postgresql://host[:port]/database")
     parser.add_argument("-v", "--verbose", default=None, help="Verbose output")
+    parser.add_argument("-e", "--prefix", default=None, help="set a prefix for environment variables")
     parser.add_argument("-H", "--host", default=None, help="override database hostname")
     parser.add_argument("-P", "--port", default=None, help="override database port")
     parser.add_argument("-N", "--name", default=None, help="override database name")
@@ -46,6 +47,9 @@ def main():
     parser.add_argument("-U", "--user", default=None, help="override database username")
     parser.add_argument("-p", "--pswd", default=None, help="override database password")
     a = parser.parse_args()
+
+    if a.prefix:
+        set_env_prefix(a.prefix)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, password=a.pswd, url=a.url)
 

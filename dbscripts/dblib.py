@@ -14,6 +14,7 @@ __all__ = (
     "pg_setup",
     "pg_dsn",
     "pg_clear_connections",
+    "set_env_prefix",
 )
 
 
@@ -22,6 +23,19 @@ class EnvironmentNotConfigured(Exception):
 
 
 env = Env(readenv=True, exception=EnvironmentNotConfigured)
+env_prefix = env("ENVPREFIX", default=None)
+
+
+def set_env_prefix(prefix: str):
+    global env_prefix
+    env_prefix = prefix
+
+
+def getenv(key: str, default=None):
+    if env_prefix:
+        if value := env(f"{env_prefix}_{key}") is not None:
+            return value
+    return env(key, default=default)
 
 
 class DBUrl:
@@ -29,12 +43,12 @@ class DBUrl:
     __default_pgport = 5432
     __defaults = {
         "scheme": "postgresql",
-        "host": env("DBHOST"),
-        "port": env("DBPORT"),
-        "name": env("DBNAME"),
-        "user": env("DBUSER"),
-        "role": env("DBROLE", default=env("DBUSER")),
-        "password": env("DBPASS"),
+        "host": getenv("DBHOST"),
+        "port": getenv("DBPORT"),
+        "name": getenv("DBNAME"),
+        "user": getenv("DBUSER"),
+        "role": getenv("DBROLE", default=getenv("DBUSER")),
+        "password": getenv("DBPASS"),
     }
 
     def __init__(self, **kwargs):
@@ -72,7 +86,7 @@ class DBUrl:
         :param url: str|None url to parse, otherwise sourced from the environment
         """
         if not url:
-            url = env("DATABASE_URL") or env("DJANGO_DATABASE_URL")
+            url = getenv("DATABASE_URL") or getenv("DJANGO_DATABASE_URL")
         if url and (parsed_url := urlparse(url)):
             self.scheme = parsed_url.scheme.replace("postgresql+psycopg2", "postgresql")
             self.host = parsed_url.hostname
@@ -110,7 +124,7 @@ def pg_db_info(host=None, port=None, name=None, role=None, user=None, password=N
 
 
 def pg_dsn(db: DBUrl, sa: bool = False) -> str:
-    dsn = env("SA_DATABASE_URL") if sa else db.url()
+    dsn = getenv("SA_DATABASE_URL") if sa else db.url()
     if not dsn:
         raise EnvironmentNotConfigured("SA_DATABASE_URL" if sa else "DATABASE_URL")
     return dsn

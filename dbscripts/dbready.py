@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 
 from psycopg import DatabaseError
 
-from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info
+from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info, set_env_prefix
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]
@@ -40,6 +40,7 @@ def main():
     )
     parser.add_argument("-q", "--quiet", action="store_true", default=False, help="Do not report errors or progress")
     parser.add_argument("-u", "--url", nargs="?", default="", help="Connection url: postgresql://host[:port]/database")
+    parser.add_argument("-e", "--prefix", nargs="?", default=None, help="set a prefix for environment variables")
     parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Verbose output")
     parser.add_argument("-H", "--host", nargs="?", default="", help="override database hostname")
     parser.add_argument("-P", "--port", nargs="?", default="", help="override database port")
@@ -48,6 +49,9 @@ def main():
     parser.add_argument("-p", "--pswd", nargs="?", default="", help="override database password")
 
     a = parser.parse_args()
+
+    if a.prefix:
+        set_env_prefix(a.prefix)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, password=a.pswd, url=a.url)
 

@@ -14,6 +14,7 @@ DB_USER = "test"
 DB_PASSWORD = "testing"
 DB_NAME = "test_db"
 
+
 @pytest.fixture(scope="module")
 def postgres():
     env("POSTGRES_USER", POSTGRES_USER)
