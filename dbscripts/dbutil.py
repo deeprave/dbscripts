@@ -3,10 +3,11 @@
 """
 Create/remove/test database for django using best practices.
 """
+
 import logging
 import textwrap
 
-from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup
+from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup, set_env_prefix
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]

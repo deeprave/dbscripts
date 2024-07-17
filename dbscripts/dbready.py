@@ -3,6 +3,7 @@
 """
 test for database ready and optionally connection
 """
+
 import logging
 import textwrap
 import time
@@ -77,10 +78,7 @@ def main():
             success = True
         except DatabaseError as exc:
             message = str(exc.args[0]).replace("\n", " ")
-            success = all(
-                reason not in message
-                for reason in ["Connection refused", "connection is bad"]
-            )
+            success = all(reason not in message for reason in ["Connection refused", "connection is bad"])
             if not a.quiet and a.verbose:
                 logging.warning(message)
 

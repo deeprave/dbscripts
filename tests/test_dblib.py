@@ -48,22 +48,14 @@ def test_pg_dsn(postgres):
 
 def test_pg_setup(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     dblib.pg_setup(db_info)  # No assertion, just checking for unexpected exceptions
 
 
 def test_pg_db_info(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     assert db_info is not None
     assert isinstance(db_info, dblib.DBUrl)
@@ -75,11 +67,7 @@ def test_pg_db_info(postgres):
 
 def test_pg_connect(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     conn = dblib.pg_connect(db_info)
     assert conn is not None
@@ -89,11 +77,7 @@ def test_pg_connect(postgres):
 
 def test_pg_database_exists(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     exists = dblib.pg_database_exists(db_info)
     assert exists is True
@@ -101,11 +85,7 @@ def test_pg_database_exists(postgres):
 
 def test_pg_clear_connections(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     before = dblib.pg_count_connections(db_info)
     dblib.pg_clear_connections(db_info)
@@ -115,10 +95,6 @@ def test_pg_clear_connections(postgres):
 
 def test_pg_drop_database(postgres):
     db_info = dblib.pg_db_info(
-        url=postgres.get_connection_url(),
-        name=DB_NAME,
-        role=DB_USER,
-        user=DB_USER,
-        password=DB_PASSWORD
+        url=postgres.get_connection_url(), name=DB_NAME, role=DB_USER, user=DB_USER, password=DB_PASSWORD
     )
     dblib.pg_drop_database(db_info)  # No assertion, just checking for exceptions

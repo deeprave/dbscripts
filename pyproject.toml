@@ -12,19 +12,18 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10.0,<4.0.0"
-envex = ">=3.0.3"
-psycopg = {extras = ["binary"], version = ">=3.1.8"}
+envex = "^3.1"
+psycopg = {extras = ["binary"], version = "^3.2"}
 
 [tool.poetry.scripts]
-dbcreate = "dbscripts.dbcreate:main"
+dbutil = "dbscripts.dbutil:main"
 dbready = "dbscripts.dbready:main"
 
 [tool.poetry.group.dev.dependencies]
-pytest = ">= 7.2"
-pre-commit = "^3.3.3"
+pytest = "^8.2"
+pre-commit = "^3.3"
 ruff = "^0.5.2"
-testcontainers = "^4.7.1"
-black = "24.4.2"
+testcontainers = "^4.7.2"
 
 [tool.ruff]
 namespace-packages = ["dbscripts"]

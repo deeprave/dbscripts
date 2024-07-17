@@ -39,7 +39,6 @@ def getenv(key: str, default=None):
 
 
 class DBUrl:
-
     __default_pgport = 5432
     __defaults = {
         "scheme": "postgresql",
@@ -95,7 +94,6 @@ class DBUrl:
             self.user = self.role = parsed_url.username
             self.password = parsed_url.password
 
-
     def to_dict(self):
         return dict(
             scheme=self.scheme,
@@ -108,7 +106,9 @@ class DBUrl:
         )
 
     def url(self):
-        return f"{self.scheme}://{self.user}:{self.password}@{self.host}:{self.port or self.__default_pgport}/{self.name}"
+        return (
+            f"{self.scheme}://{self.user}:{self.password}@{self.host}:{self.port or self.__default_pgport}/{self.name}"
+        )
 
     def __getitem__(self, key):
         if hasattr(self, key):
@@ -140,11 +140,7 @@ def pg_count_connections(db: DBUrl, **kwargs) -> int:
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
-
-            cursor.execute(
-                """SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """
-                """WHERE datname=%s""", (db.name,)
-            )
+            cursor.execute("""SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """ """WHERE datname=%s""", (db.name,))
             result = cursor.fetchone()
         conn.close()
         if result:
@@ -158,8 +154,8 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
             cursor.execute(
-                """SELECT pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity """
-                """WHERE datname = %s""", (db.name,)
+                """SELECT pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity """ """WHERE datname = %s""",
+                (db.name,),
             )
         conn.close()
 
