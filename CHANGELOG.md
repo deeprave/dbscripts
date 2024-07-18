@@ -1,9 +1,15 @@
 # ChangeLog
+### 1.5.4
+- documentation corrections
+
+### 1.5.3
+- corrected pyproject.toml to correctly use dbutil.py
+
 ### 1.5.2
-- added -e <PREFIX> option, to add a prefix to environment variables 
+- added -e <PREFIX> option, to add a prefix to environment variables
 - renamed `dbcreate` to `dbutil`, to be more descriptive of function
 
-### 1.5.2 (unpublished)
+### 1.5.1 (unpublished)
 - various @dependabot dependency updates
 
 ### 1.5.0

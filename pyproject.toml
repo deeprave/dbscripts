@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "dbscripts"
-version = "1.5.2"
-description = "Collection of helper scripts for postgresql"
+version = "1.5.3"
+description = "Collection of helper scripts for PostgreSQL"
 authors = ["David Nugent <davidn@uniquode.io>"]
 license = "MIT"
 readme = "README.md"
@@ -21,7 +21,6 @@ dbready = "dbscripts.dbready:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2"
-pre-commit = "^3.3"
 ruff = "^0.5.2"
 testcontainers = "^4.7.2"
 

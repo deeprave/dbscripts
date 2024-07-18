@@ -4,7 +4,8 @@ A collection of scripts for database management.
 
 Designed for use with postgresql.
 
-## dbcreate
+## dbutil
+Formerly `dbcreate`, this script is used to create, remove and test for the existence of a database, and associated roles.
 
 ```shell
 usage: dbutil [-h] [-c] [-r] [-t] [-e PREFIX] [-u URL] [-v VERBOSE] [-H HOST] [-P PORT] [-N NAME] [-R ROLE] [-U USER] [-p PSWD]
@@ -26,10 +27,13 @@ options:
   -U USER, --user USER  override database username
   -p PSWD, --pswd PSWD  override database password
 
-database details are initially sourced from .env which can be overridden by the command line, either by specifying individual parts or the complete database url. superuser account details are sourced from .env in current or parent directories only.
+database details are initially sourced from .env which can be overridden by the
+command line, either by specifying individual parts or the complete database url.
+superuser account details are sourced from .env in current or parent directories only.
 ```
 
 ## dbready
+This script is used to test for the readiness of a database, and optionally to test for a connection to a specific database.
 
 ```shell
 usage: dbready [-h] [-w] [-t TIMEOUT] [-s SLEEP] [-e PREFIX] [-d] [-q] [-u [URL]] [-v] [-H [HOST]] [-P [PORT]] [-N [NAME]] [-U [USER]] [-p [PSWD]]
@@ -52,18 +56,22 @@ options:
   -U [USER], --user [USER]  override database username
   -p [PSWD], --pswd [PSWD]  override database password
 
+database details are initially sourced from .env which can be overridden by the
+command line, either by specifying individual parts or the complete database url.
+superuser account details are sourced from .env in current or parent directories only.
 ```
 
 ## Rationale
-Many web developers undertake numerous projects that necessitate the use of a database, with a significant majority favoring PostgreSQL.
+Many web developers undertake many projects that require the use of a database, with a significant majority favouring PostgreSQL.
 
 This toolkit provides a streamlined approach to database management, adhering to industry best practices.
+
 It guarantees that:
 - The user affiliated with an application is not a superuser.
 - The user affiliated with an application is secured with a password.
 - The user inherits access to the database from a nologin role, which actually owns the database
 - Tables, sequences and other entities are not created in the superuser `postgres` database, to better support multi-tenancy with other applications.
 - Database metadata including credentials is placed within a `.env` file, or since 1.4 also supports fetching secrets from hashicorp vault.
-- The prefix option available with both commands allows setting a prefix (`<prefix>_<name>`) on environment variables, to allow multiple databases (with different users, roles etc) to be managed in the same environment.
+- The prefix option available with both commands allows setting a prefix (`<prefix>_<name>`) on environment variables, to allow multiple databases (with different users, roles, etc) to be managed in the same environment.
   If the prefixed variable is not set, the non-prefixed variable is used as a fallback.
   For convenience, setting the ENVPREFIX environment variable will set the default prefix for all commands.
