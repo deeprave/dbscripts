@@ -20,7 +20,7 @@ dbutil = "dbscripts.dbutil:main"
 dbready = "dbscripts.dbready:main"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.2"
+pytest = "^8.3"
 ruff = "^0.5.2"
 testcontainers = "^4.7.2"
 
