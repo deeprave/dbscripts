@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 
 from psycopg import DatabaseError
 
-from envex import Env
 
 from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info, set_env_prefix
 
@@ -53,11 +52,7 @@ def main():
 
     a = parser.parse_args()
 
-    env = Env(readenv=True)
-    if not a.prefix:
-        a.prefix = env("ENVPREFIX") or env("DJANGO_SITE").upper() if env.is_set("DJANGO_SITE") else None
-    if a.prefix and a.prefix != "-":
-        set_env_prefix(a.prefix)
+    set_env_prefix(a.prefix)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, password=a.pswd, url=a.url)
 
