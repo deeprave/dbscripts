@@ -2,6 +2,7 @@ import contextlib
 import copy
 import logging
 from urllib.parse import urlparse
+from typing import Optional
 
 import psycopg as pg
 from envex import Env
@@ -26,13 +27,18 @@ env = Env(readenv=True, exception=EnvironmentNotConfigured)
 env_prefix = None
 
 
-def set_env_prefix(prefix: str):
+def set_env_prefix(prefix: Optional[str]):
     global env_prefix
-    env_prefix = prefix
+    if prefix is not None:
+        prefix = env("ENVPREFIX") or env("DJANGO_SITE").upper() if env.is_set("DJANGO_SITE") else None
+    # using "-e -" in the cli overrides the environment and forces the prefix to be empty
+    if prefix and prefix != "-":
+        env_prefix = prefix
 
 
 def getenv(key: str, default=None):
     if env_prefix:
+        # don't use default here, as None is required if the key is not present
         if (value := env(f"{env_prefix}_{key}")) is not None:
             return value
     return env(key, default=default)

@@ -7,7 +7,6 @@ Create/remove/test database for django using best practices.
 import logging
 import textwrap
 
-from envex import Env
 
 from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup, set_env_prefix
 
@@ -51,11 +50,7 @@ def main():
     parser.add_argument("-p", "--pswd", default=None, help="override database password")
     a = parser.parse_args()
 
-    env = Env(readenv=True)
-    if not a.prefix:
-        a.prefix = env("ENVPREFIX") or env("DJANGO_SITE").upper() if env.is_set("DJANGO_SITE") else None
-    if a.prefix and a.prefix != "-":
-        set_env_prefix(a.prefix)
+    set_env_prefix(a.prefix)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, password=a.pswd, url=a.url)
 
