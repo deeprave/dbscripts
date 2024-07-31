@@ -2,6 +2,6 @@
 <project version="4">
   <component name="RuffConfigService">
     <option name="globalRuffExecutablePath" value="/opt/homebrew/bin/ruff" />
-    <option name="projectRuffExecutablePath" value="$USER_HOME$/Library/Caches/pypoetry/virtualenvs/django-settings-env-VOQU9kUv-py3.12/bin/ruff" />
+    <option name="projectRuffExecutablePath" value="$USER_HOME$/Library/Caches/pypoetry/virtualenvs/dbscripts-WCYxVkYY-py3.12/bin/ruff" />
   </component>
 </project>

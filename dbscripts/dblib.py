@@ -23,7 +23,7 @@ class EnvironmentNotConfigured(Exception):
 
 
 env = Env(readenv=True, exception=EnvironmentNotConfigured)
-env_prefix = env("ENVPREFIX", default=None)
+env_prefix = None
 
 
 def set_env_prefix(prefix: str):
