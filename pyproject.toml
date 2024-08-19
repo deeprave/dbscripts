@@ -21,7 +21,7 @@ dbready = "dbscripts.dbready:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
-ruff = "^0.5.5"
+ruff = "^0.6.1"
 testcontainers = "^4.7.2"
 
 [tool.ruff]
