@@ -8,7 +8,7 @@ envex==3.1.2
     # via dbscripts (pyproject.toml)
 psycopg[binary]==3.2.1
     # via dbscripts (pyproject.toml)
-psycopg-binary==3.2.1
+psycopg-binary==3.2.2
     # via psycopg
 typing-extensions==4.12.2
     # via psycopg
