@@ -1,7 +1,6 @@
 import contextlib
 import copy
 import logging
-from functools import cache
 from urllib.parse import urlparse
 from typing import Optional
 
@@ -28,7 +27,6 @@ env = Env(readenv=True, exception=EnvironmentNotConfigured)
 env_prefix = None
 
 
-@cache
 def set_env_prefix(prefix: Optional[str]):
     global env_prefix
     if prefix:

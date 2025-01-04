@@ -6,7 +6,7 @@
 
 ### 2024.1.0
 - Switched to year-semantic versioning
-- Additional support for environment variables to set the default variable prefix, now supports ENVPREIFX and uppercased DJANGO_SITE (for my own convenience)
+- Additional support for environment variables to set the default variable prefix, now supports ENVPREFIX and uppercased DJANGO_SITE (for my own convenience)
 
 ### 1.5.4
 - documentation corrections
