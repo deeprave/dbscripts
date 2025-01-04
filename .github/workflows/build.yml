@@ -16,13 +16,11 @@ concurrency:
 
 jobs:
   ci:
+    runs-on: [ ubuntu-latest ]
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.12", "3.11", "3.10" ]
-        poetry-version: [ "1.7.1", "1.8.3" ]
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
+        python-version: [ "3.13" , "3.12", "3.11" ]
 
     steps:
     - uses: actions/checkout@v4
@@ -30,17 +28,6 @@ jobs:
         # Fetch all tags
         fetch-depth: 0
 
-    - uses: actions/setup-python@v5
+    - uses: deeprave/test-build@v1
       with:
           python-version: ${{ matrix.python-version }}
-
-    - name: Run image
-      uses: abatilo/actions-poetry@v3
-      with:
-          poetry-version: ${{ matrix.poetry-version }}
-
-    - name: Install build dependencies
-      run: poetry install
-
-    - name: Build
-      run: poetry build

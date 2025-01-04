@@ -1,6 +1,7 @@
 import contextlib
 import copy
 import logging
+from functools import cache
 from urllib.parse import urlparse
 from typing import Optional
 
@@ -27,13 +28,15 @@ env = Env(readenv=True, exception=EnvironmentNotConfigured)
 env_prefix = None
 
 
+@cache
 def set_env_prefix(prefix: Optional[str]):
     global env_prefix
-    if prefix is not None:
-        prefix = env("ENVPREFIX") or env("DJANGO_SITE").upper() if env.is_set("DJANGO_SITE") else None
-    # using "-e -" in the cli overrides the environment and forces the prefix to be empty
-    if prefix and prefix != "-":
-        env_prefix = prefix
+    if prefix:
+        env_prefix = prefix.upper() if prefix != "-" else None
+    elif env.is_set("DJANGO_SITE"):
+        env_prefix = env("DJANGO_SITE").upper()
+    else:
+        env_prefix = env("ENVPREFIX")
 
 
 def getenv(key: str, default=None):

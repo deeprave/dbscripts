@@ -1,4 +1,9 @@
 # ChangeLog
+
+### 2025.1.0
+
+- Switched from poetry to uv for project management.
+
 ### 2024.1.0
 - Switched to year-semantic versioning
 - Additional support for environment variables to set the default variable prefix, now supports ENVPREIFX and uppercased DJANGO_SITE (for my own convenience)
