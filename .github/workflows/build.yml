@@ -28,6 +28,6 @@ jobs:
         # Fetch all tags
         fetch-depth: 0
 
-    - uses: deeprave/test-build@v1
+    - uses: deeprave/actions/test-build@v1
       with:
           python-version: ${{ matrix.python-version }}
