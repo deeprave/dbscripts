@@ -1,6 +1,6 @@
 [project]
 name = "dbscripts"
-version = "2025.1.0"
+version = "2025.1.1"
 description = "Collection of helper scripts for PostgreSQL"
 authors = [
     {name = "David Nugent", email = "davidn@uniquode.io"}

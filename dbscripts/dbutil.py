@@ -8,10 +8,12 @@ import logging
 import textwrap
 
 
-from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup, set_env_prefix
+from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup, set_env_prefix, set_verbosity
 
 logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]
+    format="%(asctime)s %(levelname)-7s %(message)s",
+    level=logging.DEBUG,
+    handlers=[logging.StreamHandler()]
 )
 
 
@@ -40,7 +42,7 @@ def main():
         "-t", "--test", action="store_true", default=False, help="Test to see if the database and roles exist"
     )
     parser.add_argument("-u", "--url", default=None, help="Connection url: postgresql://host[:port]/database")
-    parser.add_argument("-v", "--verbose", default=None, help="Verbose output")
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="Increase verbosity")
     parser.add_argument("-e", "--prefix", default=None, help="set a prefix for environment variables")
     parser.add_argument("-H", "--host", default=None, help="override database hostname")
     parser.add_argument("-P", "--port", default=None, help="override database port")
@@ -54,10 +56,7 @@ def main():
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.role, user=a.user, password=a.pswd, url=a.url)
 
-    if a.verbose:
-        dbc = dbi.copy()
-        dbc.password = "********"
-        logging.info(f"DATABASE_URL={dbc.url()}")
+    set_verbosity(a.verbose)
 
     if a.test:
         pg_database_exists(dbi)

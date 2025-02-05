@@ -16,16 +16,26 @@ __all__ = (
     "pg_dsn",
     "pg_clear_connections",
     "set_env_prefix",
+    "set_verbosity",
 )
+
+
+DATABASE_URL = "DATABASE_URL"
+SA_DATABASE_URL = "SA_DATABASE_URL"
 
 
 class EnvironmentNotConfigured(Exception):
     pass
 
 
+
+def set_verbosity(verbosity: int = 0):
+    verbose = logging.WARN if not verbosity else logging.INFO if verbosity == 1 else logging.DEBUG
+    logging.getLogger().setLevel(verbose)
+
+
 env = Env(readenv=True, exception=EnvironmentNotConfigured)
 env_prefix = None
-
 
 def set_env_prefix(prefix: Optional[str]):
     global env_prefix
@@ -35,6 +45,8 @@ def set_env_prefix(prefix: Optional[str]):
         env_prefix = env("DJANGO_SITE").upper()
     else:
         env_prefix = env("ENVPREFIX")
+    if env_prefix:
+        logging.debug(f"Using env_prefix '{env_prefix}'")
 
 
 def getenv(key: str, default=None):
@@ -112,33 +124,63 @@ class DBUrl:
             pswd=self.password,
         )
 
+    def copy(self, **kwargs):
+        copied = copy.copy(self)
+        for attr, value in kwargs.items():
+            setattr(copied, attr, value)
+        return copied
+
     def url(self):
         return (
             f"{self.scheme}://{self.user}:{self.password}@{self.host}:{self.port or self.__default_pgport}/{self.name}"
         )
+
+    def log_url(self) -> str:
+        return self.copy(password="****").url()
 
     def __getitem__(self, key):
         if hasattr(self, key):
             return getattr(self, key)
         raise KeyError(key)
 
-    def copy(self):
-        return copy.copy(self)
+    def __repr__(self):
+        return f"{self.__class__.__name__} {self.to_dict()}"
+
+    def __str__(self):
+        return self.url()
 
 
 def pg_db_info(host=None, port=None, name=None, role=None, user=None, password=None, url=None) -> DBUrl:
-    return DBUrl(host=host, port=port, name=name, role=role, user=user, password=password, url=url)
+    dburl = DBUrl(host=host, port=port, name=name, role=role, user=user, password=password, url=url)
+    logging.info(f"DATABASE_URL={dburl.copy(password="****")}")
+    return dburl
 
 
-def pg_dsn(db: DBUrl, sa: bool = False) -> str:
-    dsn = getenv("SA_DATABASE_URL") if sa else db.url()
-    if not dsn:
-        raise EnvironmentNotConfigured("SA_DATABASE_URL" if sa else "DATABASE_URL")
-    return dsn
+def pg_dsn(db: DBUrl, sa: bool = False) -> DBUrl:
+    var = SA_DATABASE_URL if sa else DATABASE_URL
+    if sa:
+        db = DBUrl(url=getenv(var))
+    if not db:
+        msg = f"{var} is not configured"
+        logging.error(msg)
+        raise EnvironmentNotConfigured(msg)
+    return db
+
+
+def pg_execute(cursor, sql: str, *args, **kwargs):
+    logging.debug(f"Executing: '{sql}' {args} {kwargs}")
+    try:
+        cursor.execute(sql, *args, **kwargs)
+    except pg.errors.DatabaseError as exc:
+        logging.error(f"Error: {exc}")
+        raise
+    return cursor
 
 
 def pg_connect(db: DBUrl, sa: bool = False, **kwargs):
-    conn = pg.connect(pg_dsn(db, sa=sa), **kwargs)
+    db = pg_dsn(db, sa=sa)
+    logging.debug(f"Connecting to dsn: {db.log_url()}")
+    conn = pg.connect(db.url(), **kwargs)
     conn.autocommit = kwargs.get("autocommit", True)
     return conn
 
@@ -147,8 +189,7 @@ def pg_count_connections(db: DBUrl, **kwargs) -> int:
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
-            cursor.execute("""SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """ """WHERE datname=%s""", (db.name,))
-            result = cursor.fetchone()
+            result = pg_execute(cursor, """SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """ """WHERE datname=%s""", (db.name,)).fetchone()
         conn.close()
         if result:
             return result[0]
@@ -160,7 +201,8 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
-            cursor.execute(
+            pg_execute(
+                cursor,
                 """SELECT pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity """ """WHERE datname = %s""",
                 (db.name,),
             )
@@ -170,10 +212,10 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
 def pg_drop_database(db: DBUrl, **kwargs) -> None:
     conn = pg_connect(db, sa=True, **kwargs)
     with conn.cursor() as cursor:
-        cursor.execute(f"""DROP DATABASE IF EXISTS {db.name}""")
-        cursor.execute(f"""DROP USER IF EXISTS {db.user}""")
+        pg_execute(cursor, f"""DROP DATABASE IF EXISTS {db.name}""")
+        pg_execute(cursor, f"""DROP USER IF EXISTS {db.user}""")
         if db.role and db.role != db.user:
-            cursor.execute(f"""DROP ROLE IF EXISTS {db.role}""")
+            pg_execute(cursor, f"""DROP ROLE IF EXISTS {db.role}""")
     conn.close()
     logging.info(f"""Database '{db.name}' dropped""")
 
@@ -200,19 +242,19 @@ def pg_setup(db: DBUrl, **kwargs):
 
     with conn.cursor() as cursor:
         with contextlib.suppress(pg.errors.DuplicateObject):
-            cursor.execute(f"""CREATE USER {db.user} CREATEDB INHERIT PASSWORD '{db.password}'""")
+            pg_execute(cursor, f"""CREATE USER {db.user} CREATEDB INHERIT PASSWORD '{db.password}'""")
         if db.role != db.user:
             with contextlib.suppress(pg.errors.DuplicateObject):
-                cursor.execute(f"""CREATE ROLE {db.role}""")
-            cursor.execute(f"""GRANT {db.role} to {db.user}""")
-        cursor.execute(f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""")
-        cursor.execute(f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""")
-        cursor.execute(f"""ALTER ROLE {db.role} SET timezone to 'UTC'""")
+                pg_execute(cursor, f"""CREATE ROLE {db.role}""")
+            pg_execute(cursor, f"""GRANT {db.role} to {db.user}""")
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""")
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""")
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET timezone to 'UTC'""")
     logging.info(f"""Database '{db.name}' created""")
 
     with conn.cursor() as cursor:
         with contextlib.suppress(pg.errors.DuplicateDatabase):
-            cursor.execute(f"""CREATE DATABASE {db.name} WITH OWNER {db.role}""")
-        cursor.execute(f"""GRANT ALL PRIVILEGES ON DATABASE {db.name} TO {db.role}""")
+            pg_execute(cursor, f"""CREATE DATABASE {db.name} WITH OWNER {db.role}""")
+        pg_execute(cursor, f"""GRANT ALL PRIVILEGES ON DATABASE {db.name} TO {db.role}""")
 
     conn.close()

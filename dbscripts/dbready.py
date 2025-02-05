@@ -12,10 +12,10 @@ from argparse import ArgumentParser
 from psycopg import DatabaseError
 
 
-from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info, set_env_prefix
+from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info, set_env_prefix, set_verbosity
 
 logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]
+    level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]
 )
 
 
@@ -43,7 +43,7 @@ def main():
     parser.add_argument("-q", "--quiet", action="store_true", default=False, help="Do not report errors or progress")
     parser.add_argument("-u", "--url", nargs="?", default="", help="Connection url: postgresql://host[:port]/database")
     parser.add_argument("-e", "--prefix", nargs="?", default=None, help="set a prefix for environment variables")
-    parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Verbose output")
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="Verbose output")
     parser.add_argument("-H", "--host", nargs="?", default="", help="override database hostname")
     parser.add_argument("-P", "--port", nargs="?", default="", help="override database port")
     parser.add_argument("-N", "--name", nargs="?", default="", help="override database name")
@@ -53,6 +53,7 @@ def main():
     a = parser.parse_args()
 
     set_env_prefix(a.prefix)
+    set_verbosity(a.verbosity)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, password=a.pswd, url=a.url)
 
@@ -60,9 +61,7 @@ def main():
     db.name = ""
 
     if a.verbose:
-        dbc = dbi.copy()
-        dbc.password = "********"
-        logging.info(f"DATABASE_URL={dbc.url()}")
+        logging.info(f"DATABASE_URL={dbi.log_url()}")
 
     now = time.time()
     end_at = now
