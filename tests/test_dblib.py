@@ -42,7 +42,7 @@ def test_pg_dsn(postgres):
     db_info = dblib.pg_db_info(url=postgres.get_connection_url())
     dsn = dblib.pg_dsn(db_info)
     assert dsn is not None
-    parsed = urlparse(dsn)
+    parsed = urlparse(dsn.url())
     assert isinstance(parsed, ParseResult)
 
 
