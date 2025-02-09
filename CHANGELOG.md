@@ -1,5 +1,10 @@
 # ChangeLog
 
+### 2025.1.1
+
+- Adjust create database for aws quirk where owner cannot be directly set but must be assigned after.
+- Also adjust remove so that the owner is set to the superuser before dropping the database.
+
 ### 2025.1.0
 
 - Switched from poetry to uv for project management.
