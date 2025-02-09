@@ -1,9 +1,13 @@
 # ChangeLog
 
-### 2025.1.1
+### 2025.2.1
 
 - Adjust create database for aws quirk where owner cannot be directly set but must be assigned after.
 - Also adjust remove so that the owner is set to the superuser before dropping the database.
+
+### 2025.2.0
+
+- Avoid using urllib.parse.urlparse for database URL, as it does not handle unusual characters in passwords correctly.
 
 ### 2025.1.0
 
