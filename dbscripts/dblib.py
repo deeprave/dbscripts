@@ -110,7 +110,9 @@ class DBUrl:
             self.host = parsed_url.host
             self.port = parsed_url.port
             self.name = parsed_url.path.lstrip("/")
-            self.user = self.role = parsed_url.user
+            self.user = parsed_url.user
+            if not self.role:
+                self.role = parsed_url.user
             self.password = parsed_url.password
 
     def to_dict(self):
@@ -210,8 +212,10 @@ def pg_clear_connections(db: DBUrl, **kwargs) -> None:
 
 
 def pg_drop_database(db: DBUrl, **kwargs) -> None:
+    sa = pg_dsn(db, sa=True)
     conn = pg_connect(db, sa=True, **kwargs)
     with conn.cursor() as cursor:
+        pg_execute(cursor, f"""ALTER DATABASE {db.name} OWNER TO {sa.user}""")
         pg_execute(cursor, f"""DROP DATABASE IF EXISTS {db.name}""")
         pg_execute(cursor, f"""DROP USER IF EXISTS {db.user}""")
         if db.role and db.role != db.user:
@@ -250,11 +254,13 @@ def pg_setup(db: DBUrl, **kwargs):
         pg_execute(cursor, f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""")
         pg_execute(cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""")
         pg_execute(cursor, f"""ALTER ROLE {db.role} SET timezone to 'UTC'""")
-    logging.info(f"""Database '{db.name}' created""")
 
     with conn.cursor() as cursor:
         with contextlib.suppress(pg.errors.DuplicateDatabase):
-            pg_execute(cursor, f"""CREATE DATABASE {db.name} WITH OWNER {db.role}""")
+            pg_execute(cursor, f"""CREATE DATABASE {db.name}""")
+        pg_execute(cursor, f"""ALTER DATABASE {db.name} OWNER TO {db.role}""")
         pg_execute(cursor, f"""GRANT ALL PRIVILEGES ON DATABASE {db.name} TO {db.role}""")
+
+    logging.info(f"""Database '{db.name}' created""")
 
     conn.close()
