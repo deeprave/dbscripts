@@ -1,5 +1,9 @@
 # ChangeLog
 
+### 2025.2.0
+
+- Avoid using urllib.parse.urlparse for database URL, as it does not handle unusual characters in passwords correctly.
+
 ### 2025.1.0
 
 - Switched from poetry to uv for project management.
