@@ -1,6 +1,6 @@
 [project]
 name = "dbscripts"
-version = "2025.1.1"
+version = "2025.2.0"
 description = "Collection of helper scripts for PostgreSQL"
 authors = [
     {name = "David Nugent", email = "davidn@uniquode.io"}
@@ -15,6 +15,7 @@ requires-python = ">= 3.11"
 dependencies = [
     "envex >= 4.0",
     "psycopg[binary] >= 3.2",
+    "yarl>=1.18.3",
 ]
 
 scripts = { dbutil = "dbscripts.dbutil:main", dbready = "dbscripts.dbready:main"}

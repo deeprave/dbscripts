@@ -1,7 +1,7 @@
 import contextlib
 import copy
 import logging
-from urllib.parse import urlparse
+from yarl import URL
 from typing import Optional
 
 import psycopg as pg
@@ -105,12 +105,12 @@ class DBUrl:
         """
         if not url:
             url = getenv("DATABASE_URL") or getenv("DJANGO_DATABASE_URL")
-        if url and (parsed_url := urlparse(url)):
+        if url and (parsed_url := URL(url)):
             self.scheme = parsed_url.scheme.replace("postgresql+psycopg2", "postgresql")
-            self.host = parsed_url.hostname
+            self.host = parsed_url.host
             self.port = parsed_url.port
             self.name = parsed_url.path.lstrip("/")
-            self.user = self.role = parsed_url.username
+            self.user = self.role = parsed_url.user
             self.password = parsed_url.password
 
     def to_dict(self):

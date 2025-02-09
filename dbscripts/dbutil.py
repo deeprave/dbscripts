@@ -5,15 +5,19 @@ Create/remove/test database for django using best practices.
 """
 
 import logging
+from logging import StreamHandler
 import textwrap
 
 
 from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg_setup, set_env_prefix, set_verbosity
 
+
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
 logging.basicConfig(
     format="%(asctime)s %(levelname)-7s %(message)s",
     level=logging.DEBUG,
-    handlers=[logging.StreamHandler()]
+    handlers=[StreamHandler()]
 )
 
 
