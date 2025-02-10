@@ -53,7 +53,7 @@ def main():
     a = parser.parse_args()
 
     set_env_prefix(a.prefix)
-    set_verbosity(a.verbosity)
+    set_verbosity(a.verbose)
 
     dbi = pg_db_info(host=a.host, port=a.port, name=a.name, role=a.user, user=a.user, password=a.pswd, url=a.url)
 

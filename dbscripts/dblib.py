@@ -28,10 +28,9 @@ class EnvironmentNotConfigured(Exception):
     pass
 
 
-
 def set_verbosity(verbosity: int = 0):
     verbose = logging.WARN if not verbosity else logging.INFO if verbosity == 1 else logging.DEBUG
-    logging.getLogger().setLevel(verbose)
+    logging.root.setLevel(verbose)
 
 
 env = Env(readenv=True, exception=EnvironmentNotConfigured)
