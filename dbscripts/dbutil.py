@@ -15,8 +15,8 @@ from dbscripts.dblib import pg_database_exists, pg_db_info, pg_drop_database, pg
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 logging.basicConfig(
+    level=logging.WARN,
     format="%(asctime)s %(levelname)-7s %(message)s",
-    level=logging.DEBUG,
     handlers=[StreamHandler()]
 )
 

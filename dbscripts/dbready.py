@@ -14,8 +14,12 @@ from psycopg import DatabaseError
 
 from dbscripts.dblib import pg_connect, pg_database_exists, pg_db_info, set_env_prefix, set_verbosity
 
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s", handlers=[logging.StreamHandler()]
+    level=logging.WARN,
+    format="%(asctime)s %(levelname)-7s %(message)s",
+    handlers=[logging.StreamHandler()]
 )
 
 
@@ -59,9 +63,6 @@ def main():
 
     db = dbi.copy()
     db.name = ""
-
-    if a.verbose:
-        logging.info(f"DATABASE_URL={dbi.log_url()}")
 
     now = time.time()
     end_at = now
