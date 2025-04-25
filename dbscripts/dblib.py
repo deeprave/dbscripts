@@ -168,13 +168,14 @@ def pg_dsn(db: DBUrl, sa: bool = False) -> DBUrl:
     return db
 
 
-def pg_execute(cursor, sql: str, *args, **kwargs):
+def pg_execute(cursor, sql: str, *args, reraise=True, **kwargs):
     logging.debug(f"Executing: '{sql}' {args} {kwargs}")
     try:
         cursor.execute(sql, *args, **kwargs)
     except pg.errors.DatabaseError as exc:
-        logging.error(f"Error: {exc}")
-        raise
+        logging.warning(f"Error: {exc}")
+        if reraise:
+            raise
     return cursor
 
 
@@ -216,9 +217,9 @@ def pg_drop_database(db: DBUrl, **kwargs) -> None:
     with conn.cursor() as cursor:
         pg_execute(cursor, f"""ALTER DATABASE {db.name} OWNER TO {sa.user}""")
         pg_execute(cursor, f"""DROP DATABASE IF EXISTS {db.name}""")
-        pg_execute(cursor, f"""DROP USER IF EXISTS {db.user}""")
+        pg_execute(cursor, f"""DROP USER IF EXISTS {db.user}""", reraise=False)
         if db.role and db.role != db.user:
-            pg_execute(cursor, f"""DROP ROLE IF EXISTS {db.role}""")
+            pg_execute(cursor, f"""DROP ROLE IF EXISTS {db.role}""", reraise=False)
     conn.close()
     logging.info(f"""Database '{db.name}' dropped""")
 
@@ -248,11 +249,11 @@ def pg_setup(db: DBUrl, **kwargs):
             pg_execute(cursor, f"""CREATE USER {db.user} CREATEDB INHERIT PASSWORD '{db.password}'""")
         if db.role != db.user:
             with contextlib.suppress(pg.errors.DuplicateObject):
-                pg_execute(cursor, f"""CREATE ROLE {db.role}""")
+                pg_execute(cursor, f"""CREATE ROLE {db.role}""", reraise=False)
             pg_execute(cursor, f"""GRANT {db.role} to {db.user}""")
-        pg_execute(cursor, f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""")
-        pg_execute(cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""")
-        pg_execute(cursor, f"""ALTER ROLE {db.role} SET timezone to 'UTC'""")
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""", reraise=False)
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""", reraise=False)
+        pg_execute(cursor, f"""ALTER ROLE {db.role} SET timezone to 'UTC'""", reraise=False)
 
     with conn.cursor() as cursor:
         with contextlib.suppress(pg.errors.DuplicateDatabase):
