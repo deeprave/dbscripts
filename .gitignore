@@ -15,3 +15,7 @@ develop-eggs/
 eggs/
 .eggs/
 *.egg-info/
+
+# ide
+.idea/
+.vscode/

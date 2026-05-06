@@ -261,6 +261,21 @@ def pg_setup(db: DBUrl, **kwargs):
         pg_execute(cursor, f"""ALTER DATABASE {db.name} OWNER TO {db.role}""")
         pg_execute(cursor, f"""GRANT ALL PRIVILEGES ON DATABASE {db.name} TO {db.role}""")
 
+    # Connect to the new database, but still with superuser permissions
+    conn.close()
+
+    sa_db = db.copy(name=db.name)  # Copy the original DB info but ensure it targets the new database
+    conn = pg_connect(sa_db, sa=True, **kwargs)  # Connect as superuser to the new database
+
+    with conn.cursor() as cursor:
+        # Grant schema permissions
+        pg_execute(cursor, f"""GRANT USAGE ON SCHEMA public TO {db.role}""")
+        pg_execute(cursor, f"""GRANT CREATE ON SCHEMA public TO {db.role}""")
+        pg_execute(cursor, f"""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO {db.role}""")
+        pg_execute(cursor, f"""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO {db.role}""")
+        pg_execute(cursor, f"""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO {db.role}""")
+        pg_execute(cursor, f"""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TYPES TO {db.role}""")
+
     logging.info(f"""Database '{db.name}' created""")
 
     conn.close()
