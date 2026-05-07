@@ -36,6 +36,7 @@ def set_verbosity(verbosity: int = 0):
 env = Env(readenv=True, exception=EnvironmentNotConfigured)
 env_prefix = None
 
+
 def set_env_prefix(prefix: Optional[str]):
     global env_prefix
     if prefix:
@@ -153,7 +154,7 @@ class DBUrl:
 
 def pg_db_info(host=None, port=None, name=None, role=None, user=None, password=None, url=None) -> DBUrl:
     dburl = DBUrl(host=host, port=port, name=name, role=role, user=user, password=password, url=url)
-    logging.info(f"DATABASE_URL={dburl.copy(password="****")}")
+    logging.info(f"DATABASE_URL={dburl.copy(password='****')}")
     return dburl
 
 
@@ -191,7 +192,9 @@ def pg_count_connections(db: DBUrl, **kwargs) -> int:
     if db.name:
         conn = pg_connect(db, sa=True, **kwargs)
         with conn.cursor() as cursor:
-            result = pg_execute(cursor, """SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """ """WHERE datname=%s""", (db.name,)).fetchone()
+            result = pg_execute(
+                cursor, """SELECT COUNT(*) FROM pg_catalog.pg_stat_activity """ """WHERE datname=%s""", (db.name,)
+            ).fetchone()
         conn.close()
         if result:
             return result[0]
@@ -252,7 +255,9 @@ def pg_setup(db: DBUrl, **kwargs):
                 pg_execute(cursor, f"""CREATE ROLE {db.role}""", reraise=False)
             pg_execute(cursor, f"""GRANT {db.role} to {db.user}""")
         pg_execute(cursor, f"""ALTER ROLE {db.role} SET client_encoding to 'utf8'""", reraise=False)
-        pg_execute(cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""", reraise=False)
+        pg_execute(
+            cursor, f"""ALTER ROLE {db.role} SET default_transaction_isolation to 'read committed'""", reraise=False
+        )
         pg_execute(cursor, f"""ALTER ROLE {db.role} SET timezone to 'UTC'""", reraise=False)
 
     with conn.cursor() as cursor:
