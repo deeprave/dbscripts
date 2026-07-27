@@ -28,7 +28,7 @@ repository = "https://github.com/deeprave/dbutils"
 dev = [
     "pytest >= 9.0.3",
     "ruff >= 0.15.21",
-    "testcontainers >= 4.14.2",
+    "testcontainers >= 4.15.0",
 ]
 [tool.ruff]
 namespace-packages = ["dbscripts"]
