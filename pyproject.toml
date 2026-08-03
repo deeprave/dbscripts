@@ -27,7 +27,7 @@ repository = "https://github.com/deeprave/dbutils"
 [dependency-groups]
 dev = [
     "pytest >= 9.1.1",
-    "ruff >= 0.16.0",
+    "ruff >= 0.16.1",
     "testcontainers >= 4.15.0",
 ]
 [tool.ruff]
