@@ -14,7 +14,7 @@ classifiers = [
 requires-python = ">= 3.11"
 dependencies = [
     "envex >= 4.2.0",
-    "psycopg[binary] >= 3.3.8",
+    "psycopg[binary] >= 3.3.9",
     "yarl>=1.25.1",
 ]
 
